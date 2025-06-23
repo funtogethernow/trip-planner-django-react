@@ -9,7 +9,7 @@ A full-stack trip planning application that uses Django backend with OpenAI API 
 - **Modern React UI**: Clean, responsive interface built with React
 - **Django REST API**: Robust backend with CORS support for cross-origin requests
 - **HTTPS Support**: Secure connections with SSL/TLS encryption
-- **Multi-Language Support**: Automatically detects query language and responds in the same language
+- **Multi-Language Support**: Uses browser language settings to provide responses in the user's preferred language
 - **Nginx Reverse Proxy**: Production-ready deployment with load balancing
 
 ## Prerequisites
@@ -36,7 +36,7 @@ OPENAI_API_KEY=your-openai-api-key-here
 source venv/bin/activate
 
 # Install Python dependencies
-pip install django openai python-dotenv requests geopy django-cors-headers langdetect
+pip install django openai python-dotenv requests geopy django-cors-headers
 
 # Run migrations
 python manage.py migrate
@@ -179,7 +179,7 @@ Ensure your EC2 security group allows:
 
 ## Multi-Language Support
 
-The application automatically detects the language of the destination field and generates the trip plan in that language. Supported languages include:
+The application uses the browser's language preference to generate trip plans in the user's preferred language. The language is automatically detected from the browser settings and sent to the backend. Supported languages include:
 - English, Spanish, French, German, Italian
 - Portuguese, Russian, Japanese, Korean, Chinese
 - Arabic, Hindi, Turkish, Dutch, Polish

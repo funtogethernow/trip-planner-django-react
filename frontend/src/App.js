@@ -14,11 +14,21 @@ function App() {
     setLoading(true);
     setError(null);
     setPlan(null);
+    
+    // Get browser language preference
+    const browserLanguage = navigator.language || navigator.userLanguage || 'en';
+    const languageCode = browserLanguage.split('-')[0]; // Get primary language code (e.g., 'en' from 'en-US')
+    
     try {
       const response = await fetch('/api/plan/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ destination, start_date: startDate, end_date: endDate })
+        body: JSON.stringify({ 
+          destination, 
+          start_date: startDate, 
+          end_date: endDate,
+          language: languageCode
+        })
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Something went wrong');

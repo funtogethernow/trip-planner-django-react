@@ -7,8 +7,6 @@ import openai
 import os
 from geopy.geocoders import Nominatim
 import json
-from langdetect import detect, DetectorFactory
-DetectorFactory.seed = 0
 
 openai.api_key = os.getenv('OPENAI_API_KEY')
 
@@ -19,12 +17,7 @@ class TripPlanView(View):
         destination = data.get('destination')
         start_date = data.get('start_date')
         end_date = data.get('end_date')
-
-        # Detect language of the destination
-        try:
-            detected_lang = detect(destination)
-        except:
-            detected_lang = 'en'  # Default to English if detection fails
+        language = data.get('language', 'en')  # Get language from frontend, default to English
 
         # Map language code to language name for OpenAI prompt
         lang_map = {
@@ -37,7 +30,7 @@ class TripPlanView(View):
             'ms': 'Malay', 'uk': 'Ukrainian', 'fa': 'Persian', 'sr': 'Serbian', 'hr': 'Croatian',
             'sl': 'Slovenian', 'et': 'Estonian', 'lv': 'Latvian', 'lt': 'Lithuanian'
         }
-        language_name = lang_map.get(detected_lang, 'English')
+        language_name = lang_map.get(language, 'English')
 
         # Geocode destination
         geolocator = Nominatim(user_agent="trip_planner")
