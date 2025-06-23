@@ -1,0 +1,14 @@
+{
+  "name": "trip-planner",
+  "version": "1.0.0",
+  "description": "Django + React Trip Planner with OpenAI API",
+  "scripts": {
+    "start": "concurrently \"npm run backend\" \"npm run frontend\"",
+    "backend": "cd /home/ec2-user/Playground && source venv/bin/activate && python manage.py runserver 0.0.0.0:8000",
+    "frontend": "cd frontend && npm start",
+    "install-deps": "cd frontend && npm install"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+} 
