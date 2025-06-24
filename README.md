@@ -1,6 +1,33 @@
 # Trip Planner - Django + React + OpenAI
 
-A full-stack trip planning application that uses Django backend with OpenAI API for intelligent trip recommendations and React frontend for a modern user experience.
+A full-stack trip planning application that uses Django backend with OpenAI API for intelligent trip recommendations and React frontend for a modern user experience with comprehensive internationalization (I18N) support.
+
+## 🌍 Internationalization (I18N) Features
+
+### Frontend I18N (React + i18next)
+- **40+ Supported Languages**: English, Spanish, French, German, Italian, Portuguese, Russian, Japanese, Korean, Chinese (Simplified/Traditional), Arabic, Hindi, Turkish, Dutch, Polish, and many more
+- **RTL Language Support**: Full support for Arabic, Hebrew, Persian, and Urdu with proper right-to-left layout
+- **Smart Language Detection**: 
+  - Browser language preference detection
+  - URL parameter support (`?lng=es`)
+  - LocalStorage persistence
+  - Fallback chain handling
+- **Dynamic Content**: All UI text, placeholders, and messages are fully translated
+- **Date Localization**: Dates formatted according to user's language preference
+- **Accessibility**: Proper ARIA labels and screen reader support
+
+### Backend I18N (Django)
+- **Language-Aware API**: Backend responds in the user's preferred language
+- **Enhanced Error Messages**: Localized error responses with error codes
+- **Accept-Language Header Support**: Automatic language detection from browser headers
+- **Comprehensive Language Mapping**: 40+ languages supported for OpenAI responses
+
+### Key I18N Features
+- **URL Language Switching**: Change language via URL parameter
+- **Persistent Language Selection**: Language choice saved in localStorage
+- **RTL Layout Support**: Automatic layout switching for RTL languages
+- **Cultural Sensitivity**: AI responses adapted to cultural context
+- **Responsive Design**: I18N works seamlessly across all device sizes
 
 ## Features
 
@@ -9,7 +36,8 @@ A full-stack trip planning application that uses Django backend with OpenAI API 
 - **Modern React UI**: Clean, responsive interface built with React
 - **Django REST API**: Robust backend with CORS support for cross-origin requests
 - **HTTPS Support**: Secure connections with SSL/TLS encryption
-- **Multi-Language Support**: Uses browser language settings to provide responses in the user's preferred language
+- **Multi-Language Support**: Comprehensive I18N with 40+ languages
+- **RTL Language Support**: Full support for Arabic, Hebrew, Persian, and Urdu
 - **Nginx Reverse Proxy**: Production-ready deployment with load balancing
 
 ## Prerequisites
@@ -174,16 +202,41 @@ Ensure your EC2 security group allows:
 ## API Endpoints
 
 - `POST /api/plan/` - Generate trip plan
-  - Body: `{"destination": "Paris, France", "start_date": "2024-07-01", "end_date": "2024-07-07"}`
-  - Response language automatically matches the language of the destination
+  - Body: `{"destination": "Paris, France", "start_date": "2024-07-01", "end_date": "2024-07-07", "language": "es"}`
+  - Headers: `Accept-Language: es` (optional)
+  - Response language automatically matches the requested language
 
 ## Multi-Language Support
 
-The application uses the browser's language preference to generate trip plans in the user's preferred language. The language is automatically detected from the browser settings and sent to the backend. Supported languages include:
-- English, Spanish, French, German, Italian
-- Portuguese, Russian, Japanese, Korean, Chinese
-- Arabic, Hindi, Turkish, Dutch, Polish
-- And many more...
+### Supported Languages (40+)
+- **Western European**: English, Spanish, French, German, Italian, Portuguese, Dutch
+- **Eastern European**: Russian, Polish, Czech, Slovak, Hungarian, Romanian, Bulgarian, Ukrainian, Serbian, Croatian, Slovenian, Estonian, Latvian, Lithuanian
+- **Asian**: Japanese, Korean, Chinese (Simplified/Traditional), Thai, Vietnamese, Indonesian, Malay
+- **Middle Eastern**: Arabic, Hebrew, Persian, Turkish
+- **Other**: Hindi, Swedish, Danish, Norwegian, Finnish, Greek
+
+### Language Features
+- **Automatic Detection**: Browser language preference detection
+- **URL Switching**: Change language via `?lng=es` parameter
+- **Persistent Selection**: Language choice saved in localStorage
+- **RTL Support**: Full right-to-left layout for Arabic, Hebrew, Persian, Urdu
+- **Cultural Adaptation**: AI responses adapted to cultural context
+- **Fallback Chain**: Graceful fallback to English if translation missing
+
+### Using Different Languages
+
+1. **Via Language Selector**: Use the dropdown in the UI
+2. **Via URL**: Add `?lng=es` to the URL (e.g., `https://yoursite.com?lng=es`)
+3. **Via Browser**: Set your browser's preferred language
+4. **Via API**: Send `language` parameter in API requests
+
+### RTL Language Support
+The application automatically detects RTL languages and adjusts:
+- Text direction (right-to-left)
+- Layout alignment
+- Navigation arrows
+- Form field positioning
+- Calendar navigation
 
 ## Deployment Scripts
 
@@ -198,86 +251,50 @@ cd frontend && npm run build && cd ..
 echo "Deploying to nginx..."
 sudo cp -r frontend/build/* /var/www/html/trip-planner/
 
-echo "Restarting Django..."
-pkill -f "manage.py runserver"
-source venv/bin/activate
-nohup python manage.py runserver 0.0.0.0:8000 &
-
-echo "Reloading nginx..."
+echo "Restarting services..."
 sudo systemctl reload nginx
+pkill -f "manage.py runserver"
+cd .. && source venv/bin/activate && nohup python manage.py runserver 0.0.0.0:8000 &
 
 echo "Deployment complete!"
 ```
 
-### Development Mode
-```bash
-# Run both services concurrently
-npm start
-```
+## Development
+
+### Adding New Languages
+
+1. **Frontend**: Add new language file in `frontend/src/locales/`
+2. **Backend**: Add language to `LANGUAGES` in `settings.py`
+3. **Language Mapping**: Update language mapping in `views.py`
+
+### Translation Management
+
+The application uses i18next for frontend translations and Django's built-in translation system for backend messages. All user-facing text is externalized and can be easily translated.
 
 ## Troubleshooting
 
 ### Common Issues
 
-1. **Nginx not starting**: Check configuration with `sudo nginx -t`
-2. **Django not accessible**: Ensure it's running on `0.0.0.0:8000`
-3. **SSL certificate issues**: Check certificate paths in nginx config
-4. **CORS errors**: Verify Django CORS settings and nginx proxy headers
+1. **Language not switching**: Clear browser cache and localStorage
+2. **RTL layout issues**: Ensure proper CSS direction properties
+3. **Translation missing**: Check if language file exists in locales directory
+4. **API language errors**: Verify language code is in supported list
 
-### Logs
-```bash
-# Nginx logs
-sudo tail -f /var/log/nginx/error.log
-sudo tail -f /var/log/nginx/access.log
+### Debug Mode
 
-# Django logs (if using nohup)
-tail -f nohup.out
+Enable debug mode in `frontend/src/i18n.js`:
+```javascript
+debug: true, // Enable debug mode for development
 ```
 
-### Service Management
-```bash
-# Restart nginx
-sudo systemctl restart nginx
+## Contributing
 
-# Restart Django
-pkill -f "manage.py runserver"
-source venv/bin/activate
-nohup python manage.py runserver 0.0.0.0:8000 &
+1. Fork the repository
+2. Create a feature branch
+3. Add translations for new languages
+4. Test RTL support if applicable
+5. Submit a pull request
 
-# Check all services
-sudo systemctl status nginx
-ps aux | grep runserver
-```
+## License
 
-## Security Considerations
-
-- **Production Settings**: Set `DEBUG = False` in Django settings
-- **Secret Key**: Use environment variables for Django secret key
-- **API Keys**: Never commit API keys to version control
-- **SSL**: Use proper SSL certificates in production
-- **Firewall**: Configure security groups and firewalls appropriately
-- **Updates**: Keep all packages and system updated
-
-## Performance Optimization
-
-- **Static Files**: Configure Django static files serving
-- **Caching**: Implement Redis or Memcached for caching
-- **Database**: Use PostgreSQL for production
-- **CDN**: Consider using a CDN for static assets
-- **Monitoring**: Set up application monitoring and logging
-
-## Usage
-
-1. Open your browser to `https://your-domain.com` or `https://your-ec2-ip`
-2. Enter destination, start date, and end date
-3. Click "Plan Trip" to generate an AI-powered itinerary
-4. View the detailed trip plan with coordinates and recommendations
-5. The response will be in the same language as your destination input
-
-## Support
-
-For issues or questions:
-1. Check the troubleshooting section above
-2. Review nginx and Django logs
-3. Verify all services are running
-4. Test API endpoints directly with curl 
+This project is licensed under the MIT License - see the LICENSE file for details. 

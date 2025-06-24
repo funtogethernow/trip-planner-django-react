@@ -1,33 +1,19 @@
+nohup: ignoring input
 Watching for file changes with StatReloader
-[23/Jun/2025 06:17:52] "POST /api/plan/ HTTP/1.0" 200 4064
-[23/Jun/2025 06:18:17] "POST /api/plan/ HTTP/1.0" 200 2550
-[23/Jun/2025 06:18:34] "POST /api/plan/ HTTP/1.0" 200 3111
-[23/Jun/2025 06:18:44] "POST /api/plan/ HTTP/1.0" 200 3139
-[23/Jun/2025 06:19:18] "POST /api/plan/ HTTP/1.0" 200 3253
-[23/Jun/2025 06:49:41] "POST /api/plan/ HTTP/1.0" 200 3211
-[23/Jun/2025 06:56:03] "POST /api/plan/ HTTP/1.0" 200 4063
-[23/Jun/2025 06:56:20] "POST /api/plan/ HTTP/1.0" 200 2748
-Not Found: /api/actuator/
-[23/Jun/2025 16:45:25] "GET /api/actuator/ HTTP/1.0" 404 2296
-Not Found: /api/actuator/mappings
-[23/Jun/2025 16:45:25] "GET /api/actuator/mappings HTTP/1.0" 404 2320
-Not Found: /api/actuator/env
-[23/Jun/2025 16:45:25] "GET /api/actuator/env HTTP/1.0" 404 2305
-[23/Jun/2025 19:48:36] "POST /api/plan/ HTTP/1.0" 200 1719
-[23/Jun/2025 19:49:04] "POST /api/plan/ HTTP/1.0" 200 1849
-Bad Request: /api/plan/
-[23/Jun/2025 19:49:18] "POST /api/plan/ HTTP/1.0" 400 31
-[23/Jun/2025 19:49:33] "POST /api/plan/ HTTP/1.0" 200 1447
-[23/Jun/2025 19:50:09] "POST /api/plan/ HTTP/1.0" 200 3040
-[23/Jun/2025 19:51:04] "POST /api/plan/ HTTP/1.0" 200 2223
+[24/Jun/2025 05:14:35] "POST /api/plan-trip/ HTTP/1.1" 200 14052
+[24/Jun/2025 05:15:29] "POST /api/plan-trip/ HTTP/1.0" 200 14241
+[24/Jun/2025 05:18:51] "POST /api/plan-trip/ HTTP/1.1" 200 11035
+[24/Jun/2025 05:20:28] "POST /api/plan-trip/ HTTP/1.0" 200 6350
+[24/Jun/2025 05:24:03] "POST /api/plan-trip/ HTTP/1.0" 200 9200
+[24/Jun/2025 05:27:24] "POST /api/plan-trip/ HTTP/1.0" 200 16146
+[24/Jun/2025 05:28:15] "POST /api/plan-trip/ HTTP/1.0" 200 11329
 /home/ec2-user/Playground/planner/views.py changed, reloading.
 Performing system checks...
 
 System check identified no issues (0 silenced).
-June 23, 2025 - 06:16:56
+June 24, 2025 - 05:13:24
 Django version 4.2.23, using settings 'trip_planner.settings'
 Starting development server at http://0.0.0.0:8000/
 Quit the server with CONTROL-C.
 
-Watching for file changes with StatReloader
 Watching for file changes with StatReloader

@@ -1,0 +1,136 @@
+.language-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: left;
+}
+
+.language-selector.rtl {
+  text-align: right;
+}
+
+.language-selector label {
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.language-select {
+  padding: 12px 16px;
+  border: 2px solid #e1e8ed;
+  border-radius: 10px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background: white;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  padding-right: 40px;
+}
+
+.language-selector.rtl .language-select {
+  background-position: left 12px center;
+  padding-right: 16px;
+  padding-left: 40px;
+}
+
+.language-select:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.language-select:hover {
+  border-color: #667eea;
+}
+
+.language-select option {
+  padding: 8px 12px;
+  font-size: 0.9rem;
+}
+
+/* Custom styling for different language groups */
+.language-select option[value^="en"] {
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.language-select option[value^="es"],
+.language-select option[value^="fr"],
+.language-select option[value^="de"],
+.language-select option[value^="it"],
+.language-select option[value^="pt"] {
+  color: #34495e;
+}
+
+.language-select option[value^="ru"],
+.language-select option[value^="uk"],
+.language-select option[value^="bg"],
+.language-select option[value^="sr"] {
+  color: #34495e;
+  font-family: 'Times New Roman', serif;
+}
+
+.language-select option[value^="ja"],
+.language-select option[value^="ko"],
+.language-select option[value^="zh"] {
+  color: #34495e;
+  font-family: 'Hiragino Sans', 'Yu Gothic', 'Meiryo', sans-serif;
+}
+
+.language-select option[value^="ar"],
+.language-select option[value^="he"],
+.language-select option[value^="fa"],
+.language-select option[value^="ur"] {
+  color: #34495e;
+  font-family: 'Arial', sans-serif;
+}
+
+.language-select option[value^="hi"],
+.language-select option[value^="th"],
+.language-select option[value^="vi"] {
+  color: #34495e;
+  font-family: 'Arial', sans-serif;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .language-select {
+    padding: 10px 12px;
+    font-size: 0.9rem;
+    padding-right: 35px;
+  }
+  
+  .language-selector.rtl .language-select {
+    padding-right: 12px;
+    padding-left: 35px;
+  }
+  
+  .language-select option {
+    padding: 6px 10px;
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .language-select {
+    padding: 8px 10px;
+    font-size: 0.85rem;
+    padding-right: 30px;
+  }
+  
+  .language-selector.rtl .language-select {
+    padding-right: 10px;
+    padding-left: 30px;
+  }
+  
+  .language-select option {
+    padding: 5px 8px;
+    font-size: 0.8rem;
+  }
+} 

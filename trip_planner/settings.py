@@ -56,6 +56,7 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',  # Add CORS middleware
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',  # Add locale middleware
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -123,7 +124,64 @@ TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
+USE_L10N = True
+
 USE_TZ = True
+
+# Supported languages
+LANGUAGES = [
+    ('en', 'English'),
+    ('es', 'Spanish'),
+    ('fr', 'French'),
+    ('de', 'German'),
+    ('it', 'Italian'),
+    ('pt', 'Portuguese'),
+    ('ru', 'Russian'),
+    ('ja', 'Japanese'),
+    ('ko', 'Korean'),
+    ('zh-cn', 'Chinese (Simplified)'),
+    ('zh-tw', 'Chinese (Traditional)'),
+    ('ar', 'Arabic'),
+    ('hi', 'Hindi'),
+    ('tr', 'Turkish'),
+    ('nl', 'Dutch'),
+    ('pl', 'Polish'),
+    ('sv', 'Swedish'),
+    ('da', 'Danish'),
+    ('no', 'Norwegian'),
+    ('fi', 'Finnish'),
+    ('cs', 'Czech'),
+    ('sk', 'Slovak'),
+    ('hu', 'Hungarian'),
+    ('ro', 'Romanian'),
+    ('bg', 'Bulgarian'),
+    ('el', 'Greek'),
+    ('he', 'Hebrew'),
+    ('th', 'Thai'),
+    ('vi', 'Vietnamese'),
+    ('id', 'Indonesian'),
+    ('ms', 'Malay'),
+    ('uk', 'Ukrainian'),
+    ('fa', 'Persian'),
+    ('sr', 'Serbian'),
+    ('hr', 'Croatian'),
+    ('sl', 'Slovenian'),
+    ('et', 'Estonian'),
+    ('lv', 'Latvian'),
+    ('lt', 'Lithuanian'),
+]
+
+# Locale paths for translation files
+LOCALE_PATHS = [
+    BASE_DIR / 'locale',
+]
+
+# Language detection settings
+LANGUAGE_COOKIE_NAME = 'django_language'
+LANGUAGE_COOKIE_AGE = 60 * 60 * 24 * 365  # 1 year
+
+# RTL languages
+RTL_LANGUAGES = ['ar', 'he', 'fa', 'ur']
 
 
 # Static files (CSS, JavaScript, Images)
