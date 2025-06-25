@@ -25,6 +25,7 @@ function App() {
   const [highlightedPOI, setHighlightedPOI] = useState(null);
   const [pois, setPOIs] = useState([]);
 
+  
   // Check if current language is RTL
   const isRTL = ['ar', 'he', 'fa', 'ur'].includes(i18n.language);
 
@@ -75,22 +76,43 @@ function App() {
 
     setSuggestionLoading(true);
     try {
-      const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&addressdetails=1&accept-language=${selectedLanguage}`);
+      // Use Google Maps Geocoding API instead of OpenStreetMap
+      const response = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(query)}&key=${process.env.REACT_APP_GOOGLE_MAPS_API_KEY}&language=${selectedLanguage}&types=geocode`);
       const data = await response.json();
       
-      const formattedSuggestions = data.map(item => ({
-        display_name: item.display_name,
-        name: item.name || item.display_name.split(',')[0],
-        country: item.address?.country || '',
-        state: item.address?.state || '',
-        city: item.address?.city || item.address?.town || '',
-        lat: item.lat,
-        lon: item.lon,
-        type: item.type
-      }));
-      
-      setSuggestions(formattedSuggestions);
-      setShowSuggestions(true);
+      if (data.status === 'OK') {
+        const formattedSuggestions = data.results.slice(0, 5).map(item => {
+          const addressComponents = item.address_components;
+          let country = '', state = '', city = '';
+          
+          addressComponents.forEach(component => {
+            if (component.types.includes('country')) {
+              country = component.long_name;
+            } else if (component.types.includes('administrative_area_level_1')) {
+              state = component.long_name;
+            } else if (component.types.includes('locality')) {
+              city = component.long_name;
+            }
+          });
+          
+          return {
+            display_name: item.formatted_address,
+            name: item.formatted_address.split(',')[0],
+            country,
+            state,
+            city,
+            lat: item.geometry.location.lat,
+            lon: item.geometry.location.lng,
+            type: 'geocode'
+          };
+        });
+        
+        setSuggestions(formattedSuggestions);
+        setShowSuggestions(true);
+      } else {
+        setSuggestions([]);
+        setShowSuggestions(false);
+      }
     } catch (error) {
       console.error('Error fetching suggestions:', error);
       setSuggestions([]);
@@ -140,6 +162,7 @@ function App() {
     setError(null);
     setTripPlan(null);
     setPOIs([]);
+    console.log('[NEW TRIP] Clearing highlightedPOI when planning new trip');
     clearPOISelection();
 
     try {
@@ -166,7 +189,6 @@ function App() {
       
       // Use POIs from backend response
       const backendPOIs = data.pois || [];
-      console.log('Backend POIs received:', backendPOIs);
       setPOIs(backendPOIs);
       
     } catch (err) {
@@ -189,33 +211,17 @@ function App() {
 
   // Handle POI selection from map
   const handleMapPOISelection = useCallback((poi) => {
+    console.log('[MAP SELECTION] Setting highlightedPOI to:', poi.id, 'from map selection');
     setSelectedPOI(poi);
     setHighlightedPOI(poi.id);
   }, []);
 
   // Clear POI selection
   const clearPOISelection = () => {
+    console.log('[CLEAR SELECTION] Setting highlightedPOI to null');
     setSelectedPOI(null);
     setHighlightedPOI(null);
   };
-
-  // Set up global POI click handler
-  useEffect(() => {
-    window.handlePOIClick = (poiId) => {
-      const poi = pois.find(p => p.id === poiId);
-      if (poi) {
-        console.log(`🎯 POI clicked: ${poi.name} (ID: ${poi.id})`);
-        // Use the same handler that the map uses
-        handleMapPOISelection(poi);
-      } else {
-        console.log(`❌ POI not found for ID: ${poiId}`);
-      }
-    };
-
-    return () => {
-      delete window.handlePOIClick;
-    };
-  }, [pois, handleMapPOISelection]);
 
   return (
     <div className={`App ${isRTL ? 'rtl' : 'ltr'}`}>
@@ -325,89 +331,132 @@ function App() {
                   <h3>{t('app.itinerary')}</h3>
                   <div className="plan-content" dir="auto">
                     {tripPlan.plan.split('\n').map((line, lineIndex) => {
-                      // Strip POI tags from display text
-                      const displayLine = line.replace(/<poi[^>]*>([^<]+)<\/poi>/g, '$1');
-                      
                       // Check if this line contains any POIs by looking for POI tags
                       const poiTags = line.match(/<poi[^>]*>/g);
                       
                       if (poiTags) {
-                        // Extract POI information from tags
+                        // Extract POI information from tags using a unified approach
                         const linePOIs = [];
-                        const poiMatches = line.match(/<poi\s+type="([^"]+)"\s+name="([^"]+)">([^<]+)<\/poi>/g);
+                        // Updated regex that handles POI tags with IDs
+                        const poiMatches = line.match(/<poi\s+id="([^"]+)"\s+type="([^"]+)"\s+name="([^"]+)"(?:\s+icon="([^"]+)")?>([^<]+)<\/poi>/g);
                         
                         if (poiMatches) {
+                          let currentPosition = 0;
                           poiMatches.forEach((match, index) => {
+                            const idMatch = match.match(/id="([^"]+)"/);
                             const typeMatch = match.match(/type="([^"]+)"/);
                             const nameMatch = match.match(/name="([^"]+)"/);
+                            const iconMatch = match.match(/icon="([^"]+)"/);
                             const textMatch = match.match(/>([^<]+)</);
                             
-                            if (typeMatch && nameMatch && textMatch) {
+                            if (idMatch && typeMatch && nameMatch && textMatch) {
+                              const poiId = parseInt(idMatch[1]);
                               const poiType = typeMatch[1];
                               const poiName = nameMatch[1];
+                              const poiIcon = iconMatch ? iconMatch[1] : '📍'; // Default icon if not provided
                               const poiText = textMatch[1];
                               
-                              // Find corresponding POI in the pois array
-                              // Try exact name and type match first (most reliable)
-                              let poi = pois.find(p => p.name === poiName && p.type === poiType);
-                              
-                              // If no match, try matching by keyword (text content)
-                              if (!poi) {
-                                poi = pois.find(p => p.keyword === poiText);
-                              }
-                              
-                              // If still no match, try case-insensitive name matching
-                              if (!poi) {
-                                poi = pois.find(p => 
-                                  p.name.toLowerCase() === poiName.toLowerCase() ||
-                                  p.keyword.toLowerCase() === poiText.toLowerCase()
-                                );
-                              }
+                              // Find the POI by ID directly - much simpler!
+                              const poi = pois.find(p => p.id === poiId);
                               
                               if (poi) {
-                                linePOIs.push(poi);
-                                console.log(`✅ Matched POI: ${poiName} (${poiType}) -> ${poi.name} (ID: ${poi.id})`);
-                              } else {
-                                // Debug: log unmatched POIs
-                                console.log('❌ Unmatched POI:', { 
-                                  poiType, 
-                                  poiName, 
-                                  poiText, 
-                                  availablePOIs: pois.map(p => ({ 
-                                    id: p.id,
-                                    name: p.name, 
-                                    type: p.type, 
-                                    keyword: p.keyword 
-                                  })) 
+                                // Find the actual position of this specific POI in the line
+                                const matchStartIndex = line.indexOf(match, currentPosition);
+                                linePOIs.push({ 
+                                  ...poi, 
+                                  icon: poiIcon, 
+                                  originalMatch: match, 
+                                  poiText,
+                                  matchIndex: index,
+                                  startIndex: matchStartIndex,
+                                  lineIndex: lineIndex, // Add line index for better identification
+                                  uniqueId: poiId // Use the POI ID as unique identifier
                                 });
+                                // Update position for next search
+                                currentPosition = matchStartIndex + match.length;
+                              } else {
+                                // POI not found in backend data
                               }
                             }
                           });
                         }
                         
                         if (linePOIs.length > 0) {
-                          // Highlight POIs in the display text
-                          let highlightedLine = displayLine;
-                          linePOIs.forEach(poi => {
-                            const poiRegex = new RegExp(`(${poi.keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
-                            highlightedLine = highlightedLine.replace(poiRegex, (match, poiText) => {
+                          // Sort POIs by their position in the line
+                          linePOIs.sort((a, b) => a.startIndex - b.startIndex);
+                          
+                          // Create React elements in the correct order
+                          const lineParts = [];
+                          let currentLine = line;
+                          let offset = 0;
+                          
+                          linePOIs.forEach((poi, poiIndex) => {
+                            const parts = currentLine.split(poi.originalMatch);
+                            if (parts.length === 2) {
+                              // Add text before POI
+                              if (parts[0]) {
+                                lineParts.push(parts[0]);
+                              }
+                              
+                              // Add POI element with unique key and isolated event handler
                               const isHighlighted = highlightedPOI === poi.id;
-                              return `<span class="poi-highlight ${isHighlighted ? 'poi-selected' : ''}" data-poi-id="${poi.id}" onclick="window.handlePOIClick(${poi.id})">${poiText}</span>`;
-                            });
+                              const uniqueKey = `poi-${poi.id}-${lineIndex}-${poiIndex}-${poi.name}-${poi.startIndex}`;
+                              
+                              lineParts.push(
+                                <span 
+                                  key={uniqueKey}
+                                  className={`poi-highlight ${isHighlighted ? 'poi-selected' : ''}`}
+                                  data-poi-id={poi.id}
+                                  data-poi-name={poi.name}
+                                  data-poi-index={poiIndex}
+                                  data-poi-start-index={poi.startIndex}
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    e.nativeEvent.stopImmediatePropagation();
+                                    console.log('[PLAN BOX] POI clicked:', poi);
+                                    console.log('[PLAN BOX] Clicked POI details:', {
+                                      id: poi.id,
+                                      name: poi.name,
+                                      type: poi.type,
+                                      startIndex: poi.startIndex,
+                                      lineIndex: poi.lineIndex,
+                                      matchIndex: poi.matchIndex
+                                    });
+                                    // Use setTimeout to ensure this is the only event being processed
+                                    setTimeout(() => {
+                                      console.log('[PLAN CLICK] Setting highlightedPOI to:', poi.id, 'from plan text click');
+                                      setSelectedPOI(poi);
+                                      setHighlightedPOI(poi.id);
+                                      console.log('[MAP] Highlighting POI on map:', poi);
+                                    }, 0);
+                                  }}
+                                >
+                                  {poi.icon || '📍'} {poi.poiText}
+                                </span>
+                              );
+                              
+                              // Update current line to remaining text
+                              currentLine = parts[1];
+                            }
                           });
                           
+                          // Add any remaining text
+                          if (currentLine) {
+                            lineParts.push(currentLine);
+                          }
+                          
                           return (
-                            <p 
-                              key={lineIndex} 
-                              dangerouslySetInnerHTML={{ __html: highlightedLine }}
-                              className="poi-line"
-                            />
+                            <p key={lineIndex} className="poi-line">
+                              {lineParts}
+                            </p>
                           );
                         }
                       }
                       
-                      // Return regular line without POI tags
-                      return <p key={lineIndex}>{displayLine}</p>;
+                      // Return regular line without POI tags (strip any remaining tags)
+                      const cleanLine = line.replace(/<poi[^>]*>([^<]+)<\/poi>/g, '$1');
+                      return <p key={lineIndex}>{cleanLine}</p>;
                     })}
                   </div>
                 </div>
@@ -444,7 +493,10 @@ function App() {
       {selectedPOI && (
         <div className="poi-selection-indicator">
           <button className="close-btn" onClick={clearPOISelection}>×</button>
-          <h4>{selectedPOI.name}</h4>
+          <div className="poi-indicator-header">
+            <span className="poi-indicator-icon">{selectedPOI.icon || '📍'}</span>
+            <h4>{selectedPOI.name}</h4>
+          </div>
           <p>{selectedPOI.context}</p>
         </div>
       )}

@@ -78,7 +78,6 @@
     "pointsOfInterest": "景点",
     "viewOnGoogleMaps": "在谷歌地图上查看",
     "getDirections": "获取路线",
-    "viewOnOSM": "在OpenStreetMap上查看",
     "selectedPOI": "已选择的兴趣点",
     "poiTypes": {
       "attraction": "景点",

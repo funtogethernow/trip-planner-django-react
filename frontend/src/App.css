@@ -265,6 +265,10 @@
   line-height: 1.6;
   color: #34495e;
   white-space: pre-wrap;
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
 }
 
 .plan-content p {
@@ -406,6 +410,10 @@
     height: 500px;
   }
   
+  .destination-map-container {
+    height: 500px;
+  }
+  
   .App.rtl .app-container {
     flex-direction: column;
   }
@@ -468,6 +476,10 @@
     height: 400px;
   }
   
+  .destination-map-container {
+    height: 400px;
+  }
+  
   .suggestions-dropdown {
     max-height: 250px;
   }
@@ -509,6 +521,10 @@
     height: 350px;
   }
   
+  .destination-map-container {
+    height: 350px;
+  }
+  
   .suggestions-dropdown {
     max-height: 200px;
   }
@@ -536,6 +552,20 @@
   transition: all 0.2s ease;
   border: 1px solid transparent;
   font-weight: 500;
+  user-select: none;
+  pointer-events: auto;
+  display: inline-block;
+  position: relative;
+  z-index: 10;
+  white-space: nowrap;
+  margin: 0 1px;
+  isolation: isolate;
+  contain: layout style paint;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 
 .poi-highlight:hover {
@@ -546,6 +576,11 @@
   box-shadow: 0 2px 4px rgba(25, 118, 210, 0.2);
 }
 
+.poi-highlight:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(25, 118, 210, 0.3);
+}
+
 .poi-highlight.poi-selected {
   background-color: #1976d2;
   color: white;
@@ -553,9 +588,25 @@
   box-shadow: 0 2px 8px rgba(25, 118, 210, 0.4);
 }
 
+.poi-highlight:focus {
+  outline: 2px solid #1976d2;
+  outline-offset: 2px;
+}
+
+/* Prevent text selection on POI lines */
 .poi-line {
-  margin-bottom: 8px;
-  line-height: 1.6;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* Ensure POI elements don't interfere with text selection */
+.poi-line *:not(.poi-highlight) {
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
 }
 
 /* POI Selection Indicator */
@@ -574,10 +625,30 @@
   animation: slideIn 0.3s ease;
 }
 
+.poi-indicator-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.poi-indicator-icon {
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
 .poi-selection-indicator h4 {
-  margin: 0 0 8px 0;
+  margin: 0;
   font-size: 16px;
   font-weight: 600;
+  flex: 1;
 }
 
 .poi-selection-indicator p {

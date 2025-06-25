@@ -78,7 +78,6 @@
     "pointsOfInterest": "Puntos de Interés",
     "viewOnGoogleMaps": "Ver en Google Maps",
     "getDirections": "Obtener Direcciones",
-    "viewOnOSM": "Ver en OpenStreetMap",
     "selectedPOI": "Punto de Interés Seleccionado",
     "poiTypes": {
       "attraction": "Atracción",

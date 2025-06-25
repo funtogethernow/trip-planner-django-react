@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Google Maps Test</title>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDy__u8sgAAyaaet86O7iNJz8miuRaOsgU"></script>
+  </head>
+  <body>
+    <h1>Google Maps API Test</h1>
+    <div id="map" style="height:400px;width:100%;border:2px solid #ccc;"></div>
+    <div id="status" style="margin-top:10px;padding:10px;background:#f0f0f0;"></div>
+    
+    <script>
+      const statusDiv = document.getElementById('status');
+      
+      try {
+        // Test if Google Maps API loaded
+        if (typeof google !== 'undefined' && google.maps) {
+          statusDiv.innerHTML = '<strong style="color:green;">✅ Google Maps API loaded successfully!</strong>';
+          
+          // Create a simple map
+          const map = new google.maps.Map(document.getElementById('map'), {
+            center: {lat: 48.8584, lng: 2.2945}, // Paris
+            zoom: 12
+          });
+          
+          // Add a marker
+          new google.maps.Marker({
+            position: {lat: 48.8584, lng: 2.2945},
+            map: map,
+            title: 'Eiffel Tower'
+          });
+          
+          statusDiv.innerHTML += '<br><strong style="color:green;">✅ Map created successfully!</strong>';
+        } else {
+          statusDiv.innerHTML = '<strong style="color:red;">❌ Google Maps API not loaded</strong>';
+        }
+      } catch (error) {
+        statusDiv.innerHTML = '<strong style="color:red;">❌ Error: ' + error.message + '</strong>';
+      }
+    </script>
+  </body>
+</html> 
