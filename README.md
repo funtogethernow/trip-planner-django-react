@@ -1,10 +1,19 @@
 # Trip Planner - Django + React + OpenAI
 
-A full-stack trip planning application that uses Django backend with OpenAI API for intelligent trip recommendations and React frontend for a modern user experience with comprehensive internationalization (I18N) support.
+A full-stack trip planning application that uses Django backend with OpenAI API for intelligent trip recommendations and React frontend for a modern user experience with comprehensive internationalization (I18N) support, interactive maps, and Points of Interest (POI) management.
 
-## 🌍 Internationalization (I18N) Features
+## 🌟 Key Features
 
-### Frontend I18N (React + i18next)
+### 🗺️ Interactive Map & POI System
+- **Interactive Google Maps Integration**: Real-time map display with POI markers
+- **Bidirectional POI Selection**: Click POIs on map or in plan text for seamless interaction
+- **Smart POI Highlighting**: Visual feedback with info windows and selection indicators
+- **Unique POI Identification**: Backend generates unique IDs for accurate POI tracking
+- **Race Condition Prevention**: Robust state management prevents selection conflicts
+
+### 🌍 Internationalization (I18N) Features
+
+#### Frontend I18N (React + i18next)
 - **40+ Supported Languages**: English, Spanish, French, German, Italian, Portuguese, Russian, Japanese, Korean, Chinese (Simplified/Traditional), Arabic, Hindi, Turkish, Dutch, Polish, and many more
 - **RTL Language Support**: Full support for Arabic, Hebrew, Persian, and Urdu with proper right-to-left layout
 - **Smart Language Detection**: 
@@ -16,55 +25,63 @@ A full-stack trip planning application that uses Django backend with OpenAI API 
 - **Date Localization**: Dates formatted according to user's language preference
 - **Accessibility**: Proper ARIA labels and screen reader support
 
-### Backend I18N (Django)
+#### Backend I18N (Django)
 - **Language-Aware API**: Backend responds in the user's preferred language
 - **Enhanced Error Messages**: Localized error responses with error codes
 - **Accept-Language Header Support**: Automatic language detection from browser headers
 - **Comprehensive Language Mapping**: 40+ languages supported for OpenAI responses
 
-### Key I18N Features
-- **URL Language Switching**: Change language via URL parameter
-- **Persistent Language Selection**: Language choice saved in localStorage
-- **RTL Layout Support**: Automatic layout switching for RTL languages
-- **Cultural Sensitivity**: AI responses adapted to cultural context
-- **Responsive Design**: I18N works seamlessly across all device sizes
-
-## Features
-
+### 🚀 Core Features
 - **AI-Powered Trip Planning**: Uses OpenAI GPT-3.5-turbo to generate personalized trip itineraries
-- **Geolocation Integration**: Automatically geocodes destinations using Nominatim
+- **Google Maps Geocoding**: Advanced destination search with autocomplete suggestions
+- **Date Range Picker**: Intuitive calendar interface with multi-language support
 - **Modern React UI**: Clean, responsive interface built with React
 - **Django REST API**: Robust backend with CORS support for cross-origin requests
 - **HTTPS Support**: Secure connections with SSL/TLS encryption
-- **Multi-Language Support**: Comprehensive I18N with 40+ languages
-- **RTL Language Support**: Full support for Arabic, Hebrew, Persian, and Urdu
-- **Nginx Reverse Proxy**: Production-ready deployment with load balancing
+- **Production-Ready Deployment**: Comprehensive deployment scripts and nginx configuration
 
-## Prerequisites
+## 🛠️ Prerequisites
 
 - Python 3.9+
 - Node.js 18+
 - OpenAI API key
+- Google Maps API key
 - EC2 instance (or similar cloud server)
 - Domain name (optional, for proper SSL certificates)
 
-## Complete Setup Instructions
+## 🚀 Quick Start
 
 ### 1. Environment Setup
 
 Create a `.env` file in the project root:
 ```bash
-OPENAI_API_KEY=your-openai-api-key-here
+OPENAI_API_KEY=your-openai-api-key
+REACT_APP_GOOGLE_MAPS_API_KEY=your-google-maps-api-key
 ```
 
-### 2. Backend Setup
+### 2. One-Command Deployment
 
+Use our comprehensive deployment script:
+```bash
+# Development deployment
+./deploy.sh dev
+
+# Production deployment with nginx
+./deploy.sh production-stack
+
+# Check status
+./deploy.sh status
+```
+
+### 3. Manual Setup (Alternative)
+
+#### Backend Setup
 ```bash
 # Activate virtual environment
 source venv/bin/activate
 
 # Install Python dependencies
-pip install django openai python-dotenv requests geopy django-cors-headers
+pip install -r requirements.txt
 
 # Run migrations
 python manage.py migrate
@@ -73,8 +90,7 @@ python manage.py migrate
 python manage.py runserver 0.0.0.0:8000
 ```
 
-### 3. Frontend Setup
-
+#### Frontend Setup
 ```bash
 # Install Node.js dependencies
 cd frontend
@@ -87,126 +103,84 @@ npm run build
 npm start
 ```
 
-### 4. Nginx Installation & Configuration
+## 📋 Deployment Options
 
+### Development Deployment
 ```bash
-# Install nginx and certbot
-sudo yum install -y nginx certbot python3-certbot-nginx
-
-# Create web directory
-sudo mkdir -p /var/www/html
-
-# Copy React build to nginx directory
-sudo cp -r frontend/build /var/www/html/trip-planner
-
-# Create nginx configuration
-sudo tee /etc/nginx/conf.d/trip-planner-ssl.conf > /dev/null << 'EOF'
-server {
-    listen 80;
-    server_name your-domain.com;  # Replace with your domain or IP
-    return 301 https://$server_name$request_uri;
-}
-
-server {
-    listen 443 ssl http2;
-    server_name your-domain.com;  # Replace with your domain or IP
-    
-    ssl_certificate /etc/ssl/certs/trip-planner.crt;
-    ssl_certificate_key /etc/ssl/certs/trip-planner.key;
-    
-    ssl_protocols TLSv1.2 TLSv1.3;
-    ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384;
-    ssl_prefer_server_ciphers off;
-    
-    # Serve React app
-    location / {
-        root /var/www/html/trip-planner;
-        try_files $uri $uri/ /index.html;
-        index index.html;
-    }
-    
-    # Proxy API requests to Django
-    location /api/ {
-        proxy_pass http://127.0.0.1:8000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-    
-    # Security headers
-    add_header X-Frame-Options "SAMEORIGIN" always;
-    add_header X-XSS-Protection "1; mode=block" always;
-    add_header X-Content-Type-Options "nosniff" always;
-    add_header Referrer-Policy "no-referrer-when-downgrade" always;
-    add_header Content-Security-Policy "default-src 'self' http: https: data: blob: 'unsafe-inline'" always;
-    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
-}
-EOF
-
-# Test nginx configuration
-sudo nginx -t
-
-# Start and enable nginx
-sudo systemctl start nginx
-sudo systemctl enable nginx
+./deploy.sh dev          # Build and start development server
+./deploy.sh restart      # Restart development server
+./deploy.sh stop         # Stop development server
+./deploy.sh status       # Check server status
 ```
 
-### 5. SSL Certificate Setup
-
-#### Option A: Self-Signed Certificate (Development)
+### Production Deployment
 ```bash
-# Create self-signed certificate
-sudo mkdir -p /etc/ssl/certs
-sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-    -keyout /etc/ssl/certs/trip-planner.key \
-    -out /etc/ssl/certs/trip-planner.crt \
-    -subj "/C=US/ST=State/L=City/O=Organization/CN=your-domain.com"
+./deploy.sh production-stack  # Full production deployment (nginx + gunicorn)
+./deploy.sh nginx             # Deploy nginx configuration
+./deploy.sh setup-nginx       # Prepare nginx config (non-root)
 ```
 
-#### Option B: Let's Encrypt Certificate (Production)
+### Modular Build Options
 ```bash
-# Get free SSL certificate (replace with your domain)
-sudo certbot --nginx -d your-domain.com
-
-# Enable automatic renewal
-sudo systemctl start certbot-renew.timer
-sudo systemctl enable certbot-renew.timer
+./deploy.sh build        # Build complete application
+./deploy.sh frontend     # Build frontend only
+./deploy.sh static       # Collect static files only
 ```
 
-### 6. Production Deployment
-
+### Nginx Management
 ```bash
-# Stop any running Django servers
-pkill -f "manage.py runserver"
-
-# Start Django in production mode
-source venv/bin/activate
-nohup python manage.py runserver 0.0.0.0:8000 &
-
-# Reload nginx
-sudo systemctl reload nginx
-
-# Check services status
-sudo systemctl status nginx
-ps aux | grep runserver
+sudo ./deploy.sh start-nginx    # Start nginx service
+sudo ./deploy.sh stop-nginx     # Stop nginx service
+sudo ./deploy.sh restart-nginx  # Restart nginx service
+./deploy.sh nginx-status        # Check nginx status
 ```
 
-### 7. Security Group Configuration
+## 🗺️ Interactive Map Features
 
-Ensure your EC2 security group allows:
-- **Port 80** (HTTP - for redirects)
-- **Port 443** (HTTPS)
-- **Port 22** (SSH)
+### POI (Points of Interest) System
+- **Backend POI Generation**: AI generates POIs with unique IDs and metadata
+- **Frontend POI Parsing**: Intelligent parsing of POI tags in plan text
+- **Map Integration**: POIs displayed as interactive markers on Google Maps
+- **Bidirectional Linking**: Click POIs on map or in plan text for seamless interaction
+- **Info Windows**: Rich POI information displayed in map popups
+- **Selection Indicators**: Visual feedback for selected POIs
 
-## API Endpoints
+### Map Functionality
+- **Google Maps API**: Full integration with Google Maps JavaScript API
+- **Geocoding**: Advanced destination search with autocomplete
+- **Marker Management**: Dynamic marker creation and management
+- **Info Window Control**: Programmatic info window management
+- **Map Centering**: Automatic map centering on POI selection
+- **Zoom Control**: Smart zoom levels for optimal viewing
 
-- `POST /api/plan/` - Generate trip plan
+## 🌐 API Endpoints
+
+### Trip Planning API
+- `POST /api/plan-trip/` - Generate comprehensive trip plan
   - Body: `{"destination": "Paris, France", "start_date": "2024-07-01", "end_date": "2024-07-07", "language": "es"}`
   - Headers: `Accept-Language: es` (optional)
-  - Response language automatically matches the requested language
+  - Response includes: plan text, POIs with coordinates, destination coordinates
 
-## Multi-Language Support
+### Response Format
+```json
+{
+  "destination": "Paris, France",
+  "coordinates": {"lat": 48.8566, "lon": 2.3522},
+  "plan": "Day 1: Visit the <poi id=\"1\" type=\"attraction\" name=\"Eiffel Tower\">Eiffel Tower</poi>...",
+  "pois": [
+    {
+      "id": 1,
+      "name": "Eiffel Tower",
+      "type": "attraction",
+      "lat": 48.8584,
+      "lon": 2.2945,
+      "context": "Iconic iron lattice tower on the Champ de Mars"
+    }
+  ]
+}
+```
+
+## 🌍 Multi-Language Support
 
 ### Supported Languages (40+)
 - **Western European**: English, Spanish, French, German, Italian, Portuguese, Dutch
@@ -223,78 +197,160 @@ Ensure your EC2 security group allows:
 - **Cultural Adaptation**: AI responses adapted to cultural context
 - **Fallback Chain**: Graceful fallback to English if translation missing
 
-### Using Different Languages
+## 🔧 Configuration
 
-1. **Via Language Selector**: Use the dropdown in the UI
-2. **Via URL**: Add `?lng=es` to the URL (e.g., `https://yoursite.com?lng=es`)
-3. **Via Browser**: Set your browser's preferred language
-4. **Via API**: Send `language` parameter in API requests
-
-### RTL Language Support
-The application automatically detects RTL languages and adjusts:
-- Text direction (right-to-left)
-- Layout alignment
-- Navigation arrows
-- Form field positioning
-- Calendar navigation
-
-## Deployment Scripts
-
-### Quick Deploy Script
+### Environment Variables
 ```bash
-#!/bin/bash
-# Save as deploy.sh and run: chmod +x deploy.sh && ./deploy.sh
+# Required
+OPENAI_API_KEY=your-openai-api-key
+REACT_APP_GOOGLE_MAPS_API_KEY=your-google-maps-api-key
 
-echo "Building React app..."
-cd frontend && npm run build && cd ..
-
-echo "Deploying to nginx..."
-sudo cp -r frontend/build/* /var/www/html/trip-planner/
-
-echo "Restarting services..."
-sudo systemctl reload nginx
-pkill -f "manage.py runserver"
-cd .. && source venv/bin/activate && nohup python manage.py runserver 0.0.0.0:8000 &
-
-echo "Deployment complete!"
+# Optional
+DEBUG=True/False
+DJANGO_SETTINGS_MODULE=trip_planner.settings_production
 ```
 
-## Development
+### Google Maps Setup
+1. Create a Google Cloud Project
+2. Enable Maps JavaScript API and Geocoding API
+3. Create API key with appropriate restrictions
+4. Add key to environment variables
+
+See `GOOGLE_MAPS_SETUP.md` for detailed instructions.
+
+## 🚀 Production Deployment
+
+### Complete Production Stack
+```bash
+# Deploy everything (nginx + gunicorn + frontend + backend)
+./deploy.sh production-stack
+```
+
+### Manual Production Setup
+```bash
+# Build application
+./deploy.sh build
+
+# Setup nginx (requires root)
+sudo ./deploy.sh nginx
+
+# Start gunicorn
+source venv/bin/activate
+gunicorn trip_planner.wsgi:application --bind 127.0.0.1:8000 --workers 4 --daemon
+```
+
+### SSL Certificate Setup
+```bash
+# Let's Encrypt (recommended for production)
+sudo certbot --nginx -d your-domain.com
+
+# Self-signed (development only)
+sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+    -keyout /etc/ssl/certs/trip-planner.key \
+    -out /etc/ssl/certs/trip-planner.crt
+```
+
+## 🐳 Docker Deployment
+
+### Docker Compose
+```bash
+# Deploy with Docker Compose
+./deploy.sh docker-compose
+```
+
+### Manual Docker
+```bash
+# Build and run Docker container
+./deploy.sh docker
+```
+
+## 🏗️ Development
+
+### Project Structure
+```
+├── frontend/                 # React frontend
+│   ├── src/
+│   │   ├── locales/         # Translation files
+│   │   ├── App.js           # Main application
+│   │   ├── Map.js           # Google Maps component
+│   │   └── i18n.js          # Internationalization setup
+│   └── package.json
+├── planner/                  # Django app
+│   ├── views.py             # API endpoints
+│   ├── models.py            # Data models
+│   └── urls.py              # URL routing
+├── trip_planner/            # Django project
+│   ├── settings.py          # Development settings
+│   ├── settings_production.py # Production settings
+│   └── urls.py              # Main URL configuration
+├── deploy.sh                # Comprehensive deployment script
+├── requirements.txt         # Python dependencies
+└── README.md               # This file
+```
 
 ### Adding New Languages
-
 1. **Frontend**: Add new language file in `frontend/src/locales/`
 2. **Backend**: Add language to `LANGUAGES` in `settings.py`
 3. **Language Mapping**: Update language mapping in `views.py`
 
-### Translation Management
+### Development Commands
+```bash
+# Frontend development
+cd frontend && npm start
 
-The application uses i18next for frontend translations and Django's built-in translation system for backend messages. All user-facing text is externalized and can be easily translated.
+# Backend development
+source venv/bin/activate && python manage.py runserver
 
-## Troubleshooting
-
-### Common Issues
-
-1. **Language not switching**: Clear browser cache and localStorage
-2. **RTL layout issues**: Ensure proper CSS direction properties
-3. **Translation missing**: Check if language file exists in locales directory
-4. **API language errors**: Verify language code is in supported list
-
-### Debug Mode
-
-Enable debug mode in `frontend/src/i18n.js`:
-```javascript
-debug: true, // Enable debug mode for development
+# Build and deploy
+./deploy.sh dev
 ```
 
-## Contributing
+## 🔍 Troubleshooting
+
+### Common Issues
+1. **POI selection not working**: Check browser console for errors
+2. **Map not loading**: Verify Google Maps API key
+3. **Language not switching**: Clear browser cache and localStorage
+4. **Deployment issues**: Check `./deploy.sh status` for service status
+
+### Debug Mode
+```bash
+# Enable Django debug mode
+export DEBUG=True
+
+# Enable React development mode
+cd frontend && npm start
+```
+
+### Logs and Monitoring
+```bash
+# Check Django logs
+tail -f nohup.out
+
+# Check nginx logs
+sudo tail -f /var/log/nginx/error.log
+
+# Check service status
+./deploy.sh status
+./deploy.sh nginx-status
+```
+
+## 📝 Contributing
 
 1. Fork the repository
 2. Create a feature branch
 3. Add translations for new languages
-4. Test RTL support if applicable
-5. Submit a pull request
+4. Test POI functionality and map integration
+5. Test RTL support if applicable
+6. Submit a pull request
 
-## License
+## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details. 
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 🙏 Acknowledgments
+
+- OpenAI for AI-powered trip planning
+- Google Maps for mapping and geocoding services
+- React and Django communities for excellent frameworks
+- i18next for internationalization support 
