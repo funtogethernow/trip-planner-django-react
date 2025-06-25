@@ -206,6 +206,167 @@ deploy_production() {
     print_success "Production deployment completed!"
 }
 
+# Deploy with nginx
+deploy_nginx() {
+    print_status "Deploying with nginx..."
+    
+    # Check if nginx is installed
+    if ! command -v nginx &> /dev/null; then
+        print_error "Nginx is not installed. Please install it first."
+        print_status "On Amazon Linux: sudo yum install nginx"
+        print_status "On Ubuntu: sudo apt-get install nginx"
+        exit 1
+    fi
+    
+    # Build the application first
+    build_app
+    
+    # Copy nginx configuration
+    print_status "Setting up nginx configuration..."
+    
+    # Check if running as root (needed for nginx config)
+    if [ "$EUID" -ne 0 ]; then
+        print_warning "Nginx configuration requires root privileges"
+        print_status "Please run: sudo $0 nginx"
+        exit 1
+    fi
+    
+    # Copy nginx config to sites-available (Ubuntu/Debian style)
+    if [ -d "/etc/nginx/sites-available" ]; then
+        cp trip-planner-nginx.conf /etc/nginx/sites-available/trip-planner
+        ln -sf /etc/nginx/sites-available/trip-planner /etc/nginx/sites-enabled/
+    else
+        # Amazon Linux/RHEL style
+        cp trip-planner-nginx.conf /etc/nginx/conf.d/trip-planner.conf
+    fi
+    
+    # Test nginx configuration
+    print_status "Testing nginx configuration..."
+    if nginx -t; then
+        print_success "Nginx configuration is valid"
+    else
+        print_error "Nginx configuration test failed"
+        exit 1
+    fi
+    
+    # Reload nginx
+    print_status "Reloading nginx..."
+    systemctl reload nginx
+    
+    print_success "Nginx deployment completed!"
+    print_status "Application should be accessible via nginx"
+}
+
+# Setup nginx (without root privileges)
+setup_nginx() {
+    print_status "Setting up nginx configuration..."
+    
+    # Build the application first
+    build_app
+    
+    # Copy nginx configuration to current directory for manual setup
+    print_status "Nginx configuration file prepared: trip-planner-nginx.conf"
+    print_status ""
+    print_status "To complete nginx setup, run these commands as root:"
+    print_status "1. sudo cp trip-planner-nginx.conf /etc/nginx/conf.d/"
+    print_status "2. sudo nginx -t"
+    print_status "3. sudo systemctl reload nginx"
+    print_status ""
+    print_status "Or run: sudo $0 nginx"
+}
+
+# Start nginx service
+start_nginx() {
+    print_status "Starting nginx service..."
+    
+    if [ "$EUID" -ne 0 ]; then
+        print_warning "Starting nginx requires root privileges"
+        print_status "Please run: sudo $0 start-nginx"
+        exit 1
+    fi
+    
+    systemctl start nginx
+    systemctl enable nginx
+    
+    print_success "Nginx service started and enabled"
+}
+
+# Stop nginx service
+stop_nginx() {
+    print_status "Stopping nginx service..."
+    
+    if [ "$EUID" -ne 0 ]; then
+        print_warning "Stopping nginx requires root privileges"
+        print_status "Please run: sudo $0 stop-nginx"
+        exit 1
+    fi
+    
+    systemctl stop nginx
+    
+    print_success "Nginx service stopped"
+}
+
+# Restart nginx service
+restart_nginx() {
+    print_status "Restarting nginx service..."
+    
+    if [ "$EUID" -ne 0 ]; then
+        print_warning "Restarting nginx requires root privileges"
+        print_status "Please run: sudo $0 restart-nginx"
+        exit 1
+    fi
+    
+    systemctl restart nginx
+    
+    print_success "Nginx service restarted"
+}
+
+# Show nginx status
+show_nginx_status() {
+    print_status "Checking nginx status..."
+    
+    if systemctl is-active --quiet nginx; then
+        print_success "Nginx is running"
+        echo "Nginx status:"
+        systemctl status nginx --no-pager -l
+    else
+        print_warning "Nginx is not running"
+    fi
+    
+    # Check nginx configuration
+    if nginx -t &> /dev/null; then
+        print_success "Nginx configuration is valid"
+    else
+        print_error "Nginx configuration has errors"
+        nginx -t
+    fi
+}
+
+# Deploy complete production stack (nginx + gunicorn)
+deploy_production_stack() {
+    print_status "Deploying complete production stack (nginx + gunicorn)..."
+    
+    # Build the application
+    build_app
+    
+    # Setup nginx
+    if [ "$EUID" -eq 0 ]; then
+        deploy_nginx
+    else
+        setup_nginx
+        print_status "Please run 'sudo $0 nginx' to complete nginx setup"
+    fi
+    
+    # Start gunicorn in background
+    print_status "Starting gunicorn server..."
+    source venv/bin/activate
+    nohup gunicorn trip_planner.wsgi:application --bind 127.0.0.1:8000 --workers 4 --daemon
+    
+    print_success "Production stack deployment completed!"
+    print_status "Nginx is serving the application"
+    print_status "Gunicorn is running on 127.0.0.1:8000"
+}
+
 # Show server status
 show_status() {
     print_status "Checking server status..."
@@ -266,8 +427,29 @@ main() {
         "static")
             collect_static
             ;;
+        "nginx")
+            deploy_nginx
+            ;;
+        "setup-nginx")
+            setup_nginx
+            ;;
+        "start-nginx")
+            start_nginx
+            ;;
+        "stop-nginx")
+            stop_nginx
+            ;;
+        "restart-nginx")
+            restart_nginx
+            ;;
+        "nginx-status")
+            show_nginx_status
+            ;;
+        "production-stack")
+            deploy_production_stack
+            ;;
         "help"|*)
-            echo "Usage: $0 {dev|stop|restart|status|heroku|docker|docker-compose|production|build|frontend|static|help}"
+            echo "Usage: $0 {dev|stop|restart|status|heroku|docker|docker-compose|production|build|frontend|static|nginx|setup-nginx|start-nginx|stop-nginx|restart-nginx|nginx-status|production-stack|help}"
             echo ""
             echo "Deployment options:"
             echo "  dev            - Deploy to development server (build + run Django dev server)"
@@ -281,6 +463,13 @@ main() {
             echo "  build          - Build the complete application (frontend + static files)"
             echo "  frontend       - Build frontend React application only"
             echo "  static         - Collect Django static files only"
+            echo "  nginx          - Deploy with nginx"
+            echo "  setup-nginx    - Setup nginx (non-root)"
+            echo "  start-nginx    - Start nginx service"
+            echo "  stop-nginx     - Stop nginx service"
+            echo "  restart-nginx  - Restart nginx service"
+            echo "  nginx-status   - Show nginx status"
+            echo "  production-stack - Deploy complete production stack (nginx + gunicorn)"
             echo "  help           - Show this help message"
             echo ""
             echo "Environment variables:"
@@ -292,6 +481,13 @@ main() {
             echo "  $0 restart    # Restart development server"
             echo "  $0 status     # Check server status"
             echo "  $0 build      # Build without starting server"
+            echo ""
+            echo "Nginx deployment examples:"
+            echo "  $0 setup-nginx     # Prepare nginx config (non-root)"
+            echo "  sudo $0 nginx      # Deploy nginx config (requires root)"
+            echo "  sudo $0 start-nginx # Start nginx service"
+            echo "  $0 nginx-status    # Check nginx status"
+            echo "  $0 production-stack # Full production deployment"
             ;;
     esac
 }
